@@ -1,7 +1,7 @@
 /**
  * EchoServerSederhana.java Mar 29, 2014
  */
-package id.ac.unsyiah.jte.socket;
+//package id.ac.unsyiah.jte.socket;
 
 /**
  * @author Al Qalit
@@ -22,6 +22,7 @@ import java.net.SocketException;
 public class EchoServerSederhana {
 	public static int portSocketDefault = 1805; //berdasarkan 2 NIM belakang mahasiswa
 	private static ServerSocket serverSocket;
+	private static Socket socket;
 	
 	public static void main(String[] args) throws Exception {
 		// pembuatan  socket baru pada server
@@ -38,36 +39,42 @@ public class EchoServerSederhana {
 			System.exit(1);
 		}
 		/*perform the echo service indefinitely*/
-		do {
-			mulai();
-		} while (true);	}
-	
-	private static void mulai() throws IOException {
+//		do {
+//			mulai();
+//		} while (true);	}
+//	
+//	@SuppressWarnings("null")
+//	private static void mulai() throws IOException {
 		/*data socket*/
-		//Socket sock = null;
+		Socket sock = null;
+		String blockIP = " <- Block";
+		String noBlockIP = " <- Not Block";
 		try {
-			/*listen for incoming connections*/
-			Socket socket = serverSocket.accept();
-			try{
+			socket = serverSocket.accept();
+//			try{
 			BufferedReader in = new BufferedReader(
 									new InputStreamReader(socket.getInputStream()));
 			/*create the socket writer */
 			PrintWriter out = new PrintWriter(new BufferedWriter( 
 									new OutputStreamWriter(socket.getOutputStream())),true);
 			/*read from the data socket*/
-			while (true){
-				InetAddress addBlock = socket.getInetAddress();//buat IP yg di block
+			if(socket.getLocalAddress() == socket.getInetAddress()){
+				
+				//String str = in.readLine();
+				System.out.println("[*]"+ socket.getInetAddress() + blockIP);
+				out.println("[-] IP anda di Block");
+			}else{
+//			while (true){
 				
 				String str = in.readLine();
-				
-				if(str.equals("END")) break;
-				System.out.println("Echo: " + str);
-				out.println(str);
+				if(str.equals("END")); //break;
+				System.out.println("[*] IP : "+ socket.getInetAddress() + noBlockIP);
+				out.println("[-] IP " + socket.getInetAddress() + " Diterima");
 			}
 		} finally {
 		/*close the socket*/
-			serverSocket.close();
-		}}finally{
+			sock.close();
+//		}}finally{
 			
 		}
 	}
