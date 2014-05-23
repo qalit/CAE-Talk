@@ -7,38 +7,75 @@ package id.ac.unsyiah.jte.socket;
  * @author Al Qalit
  *
  */
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.Socket;
+import java.io.*;
+import java.net.*;
+
 
 public class EchoClientSederhana {
-	public static void main(String[] args) throws IOException {
-		
-		InetAddress addr = InetAddress.getLocalHost();
-		int portSocketDefault = 1805;
+	private Socket socket = null;
+	private DataInputStream  console = null;
+	private DataOutputStream streamOut = null;
 
-		System.out.println("addr = " + addr);
-		Socket socket = new Socket(addr, portSocketDefault);
+    @SuppressWarnings("deprecation")
+	public EchoClientSederhana(String serverName, int serverPort) {
 		try {
-			System.out.println ("socket = " + socket.getInetAddress());
-			BufferedReader in = new BufferedReader (
-						new InputStreamReader(socket.getInputStream()));
-			PrintWriter out = new PrintWriter(new BufferedWriter(
-						new OutputStreamWriter(socket.getOutputStream())),true);
-			// tulis sesuatu
-			for(int i = 0; i < 10; i++){
-				out.println("Hallo " + i);
-				String str = in.readLine();
-				System.out.println(str);
-			} out.println("END");
-		} finally {
-		socket.close();
-		}
-	}
-}
+            String server;
+			String inIP = serverName;
+            if (inIP.equalsIgnoreCase("127.0.0.1")) {
+				System.out.println("[*] IP : " + inIP + " Diblok");
+				System.exit(0);
+            } else {
+                socket = new Socket(serverName, serverPort);
+                System.out.println("[*] Connected ke: " + socket.getInetAddress() + ":" + socket.getPort());
 
+                start();
+                System.out.println("[*] Memulai Percakapan");
+                System.out.println("[**] Ketik 'end' untuk mengakhiri");
+            }
+        }
+        catch(UnknownHostException hu) {
+			System.out.println("Host Unknown " + hu.getMessage());
+	    }
+
+		catch(IOException ie) {
+			System.out.println("Error: " + ie.getMessage()+ " atau kesalahan <PORT>");
+	    }
+
+		String line = "";
+	    while (!line.equalsIgnoreCase("end")) {
+	    	try {
+	    		System.out.print("Pesan >> ");
+                line = console.readLine();
+	    		streamOut.writeUTF(line);
+	    		streamOut.flush();
+	       }
+	       catch(IOException ioe) {
+	    	   System.out.println("Sending error: " + ioe.getMessage());
+	       }
+	    }
+    }
+
+    public void start() throws IOException {
+    	console   = new DataInputStream(System.in);
+    	streamOut = new DataOutputStream(socket.getOutputStream());
+    }
+
+    public void stop(){
+    	try {
+    		if (console   != null)  console.close();
+    		if (streamOut != null)  streamOut.close();
+    		if (socket    != null)  socket.close();
+        }
+       	catch(IOException ioe) {
+       		System.out.println("Error Menutup Aplikasi ...");
+       }
+    }
+
+  public static void main(String args[]) {
+      EchoClientSederhana client = null;
+      if (args.length != 2)
+         System.out.println("Cara: <Program> <HOST> <PORT>");
+      else
+         client = new EchoClientSederhana(args[0], Integer.parseInt(args[1]));
+   }
+ }
